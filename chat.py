@@ -5,17 +5,26 @@ def main(pagina):
 
     chat = ft.Column()
 
-    def enviar_msg(evento):
-        print("Btn ENVIAR ok!")
+    def enviar_msg_tunel(mensagem):
+        print(mensagem)
         # add msg no chat
-        txt_enviar_msg_chat = ft.Text(msg_chat.value)
-        chat.controls.append(txt_enviar_msg_chat)
-        # limpar campo de msg do chat
-        msg_chat.value = ""
+        txt_enviar_msg_field_chat = ft.Text(mensagem)
+        chat.controls.append(txt_enviar_msg_field_chat)
         pagina.update()
 
-    msg_chat = ft.TextField(label="Digite sua mensagem...")
-    btn_send_msg_chat = ft.ElevatedButton("Enviar", on_click=enviar_msg)
+    pagina.pubsub.subscribe(enviar_msg_tunel)
+
+    def enviar_msg(evento):
+        print("Btn ENVIAR ok!")
+        pagina.pubsub.send_all(f"{user_name.value}: {msg_field_chat.value}")
+        
+        # limpar campo de msg do chat
+        msg_field_chat.value = ""
+        pagina.update()
+
+
+    msg_field_chat = ft.TextField(label="Digite sua mensagem...", on_submit=enviar_msg)
+    btn_send_msg_field_chat = ft.ElevatedButton("Enviar", on_click=enviar_msg)
 
     def abrir_chat(evento):
         print("Btn ENTRAR ok!")
@@ -29,17 +38,16 @@ def main(pagina):
         # depois de limpar a pagina, criar de fato o chat...
         # criar o chat
         pagina.add(chat)
-        txt_user_name = ft.Text(f"{user_name.value} entrou...")
-        chat.controls.append(txt_user_name)
+        pagina.pubsub.send_all(f"{user_name.value} entrou...")
         # add campo para escrever msg
-        pagina.add(msg_chat)
+        pagina.add(msg_field_chat)
         # add btn enviar msg
-        pagina.add(btn_send_msg_chat)
+        pagina.add(btn_send_msg_field_chat)
         # atualizar para os elementeos aparecerem na pagina
         pagina.update()
 
     title_popup = ft.Text("Olá, vamos começar?!")
-    user_name = ft.TextField(label="Qual seu nome?")
+    user_name = ft.TextField(label="Qual seu nome?", on_submit=abrir_chat)
     btn_iniciar_chat = ft.ElevatedButton("Entrar", on_click=abrir_chat)
 
     popup = ft.AlertDialog(
@@ -60,5 +68,5 @@ def main(pagina):
     pagina.add(txt_title_pg)
     pagina.add(btn_iniciar)
 
-ft.app(target=main)
+ft.app(target=main, view=ft.WEB_BROWSER)
     
